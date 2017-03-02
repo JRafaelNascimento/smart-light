@@ -12,6 +12,7 @@ GPIO.setup(LIGHT, GPIO.OUT)
 
 #Variables used on system for control
 motion = False
+lightPriority = False
 
 #Running the process of phoenixsphinx and getting the output
 proc = subprocess.Popen(['sh', '-c', 'pocketsphinx_continuous -adcdev hw:1,0  -nfft 2048 -samprate 48000 -lm'],stdout=subprocess.PIPE)
@@ -19,11 +20,13 @@ proc = subprocess.Popen(['sh', '-c', 'pocketsphinx_continuous -adcdev hw:1,0  -n
 #Method that process the string recognized by microfone
 def runstring(text):
     #Turning on light if user says 'lights on'
-    if (text == "lights on"):
+    if (text == "light on"):
         GPIO.output(LIGHT, GPIO.HIGH)
+        lightPriority = True
     #Turning off light if user says 'lights off'
-    elif (text == "lights off"):
+    elif (text == "light off"):
         GPIO.output(LIGHT, GPIO.LOW)
+        lightPriority = True
     #Turning on motion if user says 'lights on'
     elif (text == "motion on"):
         motion == True
@@ -49,9 +52,10 @@ while True:
             runstring(str(output.split(":")[1]))
 
     #Checking if user wants that light turns on with motion and checking PIR
-    if GPIO.input(PIR) && motion == True:
+    if GPIO.input(PIR) && motion == True && lightPriority == False:
         GPIO.output(LIGHT, GPIO.HIGH)
         print("Motion Detected")
     elif !GPIO.input(PIR):
         GPIO.output(LIGHT, GPIO.LOW)
         print("No Motion Detected")
+        lightPriority = False
